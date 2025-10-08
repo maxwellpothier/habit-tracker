@@ -5,11 +5,13 @@ process.env.APP_STAGE = process.env.APP_STAGE || "dev";
 
 const isProduction = process.env.APP_STAGE === "prod";
 const isDevelopment = process.env.APP_STAGE === "dev";
-const isTest = process.env.APP_STAGE === "test";
+const isTesting = process.env.APP_STAGE === "test";
 
 if (isDevelopment) {
+	// load env from .env file
 	loadEnv();
-} else if (isTest) {
+} else if (isTesting) {
+	// load env from .env.test file
 	loadEnv("test");
 }
 
@@ -35,11 +37,9 @@ try {
 	env = envSchema.parse(process.env);
 } catch (e) {
 	if (e instanceof z.ZodError) {
-		console.error(
-			"Invalid environment variables:",
-			JSON.stringify(e.flatten().fieldErrors, null, 2)
-		);
-		e.errors.forEach((error) => {
+		console.log("invalid environment variables");
+		console.error(JSON.stringify(e.flatten().fieldErrors, null, 2));
+		e.issues.forEach((error) => {
 			const path = error.path.join(".");
 			console.log(`${path}: ${error.message}`);
 		});
@@ -48,5 +48,9 @@ try {
 
 	throw e;
 }
+
+export const isProd = () => env.APP_STAGE === "prod";
+export const isDev = () => env.APP_STAGE === "dev";
+export const isTest = () => env.APP_STAGE === "test";
 
 export { env };
